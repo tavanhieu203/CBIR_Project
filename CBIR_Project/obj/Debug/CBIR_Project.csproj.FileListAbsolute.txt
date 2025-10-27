@@ -1,0 +1,4 @@
+C:\Nam_4\MultiMedia\PJ_cuoiky\code\CBIR_Project\obj\Debug\CBIR_Project.csproj.AssemblyReference.cache
+C:\Nam_4\MultiMedia\PJ_cuoiky\code\CBIR_Project\obj\Debug\CBIR_Project.Properties.Resources.resources
+C:\Nam_4\MultiMedia\PJ_cuoiky\code\CBIR_Project\obj\Debug\CBIR_Project.csproj.GenerateResource.cache
+C:\Nam_4\MultiMedia\PJ_cuoiky\code\CBIR_Project\obj\Debug\CBIR_Project.csproj.CoreCompileInputs.cache
