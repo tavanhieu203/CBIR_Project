@@ -1,72 +1,160 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using CBIR_Project.Core;
 using CBIR_Project.Features;
+using CBIR_Project.Models;
+using CBIR_Project.Core;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace CBIR_Project
 {
     public partial class Form1 : Form
     {
+        private string queryImagePath;
+        private Bitmap queryImage;
+        private float[] queryFeatureVector;
+        private List<ImageFeature> datasetFeatures = new List<ImageFeature>();
+
         public Form1()
         {
             InitializeComponent();
         }
 
-        private string queryImagePath = string.Empty;
-        private string datasetPath = Path.Combine(Application.StartupPath, "Data", "Dataset");
-
+        // 1. Chọn ảnh truy vấn
         private void btnChooseImage_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Image Files|*.jpg;*.png;*.jpeg";
+
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 queryImagePath = ofd.FileName;
-                picQuery.Image = Image.FromFile(queryImagePath);
+                queryImage = new Bitmap(queryImagePath);
+                picQuery.Image = queryImage;
+
+                queryFeatureVector = FeatureExtractor.ExtractAll(queryImage);
+                lblStatus.Text = "✅ Đã chọn ảnh truy vấn và trích đặc trưng cạnh.";
             }
         }
 
+        // 2. Trích đặc trưng dataset
         private void btnExtractFeatures_Click(object sender, EventArgs e)
         {
-            var extractor = new FeatureExtractor();
-            extractor.ExtractDatasetFeatures(datasetPath);
-            MessageBox.Show("✅ Đã trích đặc trưng cho toàn bộ dataset!");
-        }
+            string datasetPath = Path.Combine(Application.StartupPath, @"..\..\Data\Dataset");
+            string csvPath = Path.Combine(Application.StartupPath, @"..\..\Data\features.csv");
 
-        private void btnSearch_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrEmpty(queryImagePath))
+            if (!Directory.Exists(datasetPath))
             {
-                MessageBox.Show("Vui lòng chọn ảnh truy vấn trước!");
+                MessageBox.Show("❌ Thư mục Dataset không tồn tại.");
                 return;
             }
 
-            var watch = Stopwatch.StartNew();
-            var extractor = new FeatureExtractor();
-            var queryVector = extractor.ExtractFeatures(queryImagePath);
+            string[] allFiles = Directory.GetFiles(datasetPath, "*.jpg")
+                                         .Concat(Directory.GetFiles(datasetPath, "*.png"))
+                                         .Concat(Directory.GetFiles(datasetPath, "*.jpeg"))
+                                         .ToArray();
 
-            var results = SimilarityCalculator.SearchTopSimilar(queryVector, "Data/features.csv", topN: 10);
-            watch.Stop();
+            var existingFeatures = File.Exists(csvPath)
+                ? FeatureStorage.LoadFromCsv(csvPath)
+                : new List<ImageFeature>();
 
-            flowResults.Controls.Clear();
-            foreach (var r in results)
+            var existingPaths = new HashSet<string>(existingFeatures.Select(f => f.ImagePath));
+            var newFiles = allFiles.Where(path => !existingPaths.Contains(path)).ToList();
+
+            btnExtractFeatures.Enabled = false;
+            lblStatus.Text = "⏳ Đang trích đặc trưng...";
+
+            Task.Run(() =>
             {
-                PictureBox pic = new PictureBox
+                var newFeatures = new ConcurrentBag<ImageFeature>();
+                int count = 0;
+
+                Parallel.ForEach(newFiles, path =>
                 {
-                    Image = Image.FromFile(r.ImagePath),
-                    Width = 120,
-                    Height = 120,
-                    SizeMode = PictureBoxSizeMode.Zoom,
-                    Margin = new Padding(8)
-                };
-                flowResults.Controls.Add(pic);
+                    try
+                    {
+                        using (Bitmap bmp = new Bitmap(path))
+                        {
+                            float[] vector = FeatureExtractor.ExtractAll(bmp);
+                            newFeatures.Add(new ImageFeature(path, vector));
+                        }
+
+                        Interlocked.Increment(ref count);
+                        Invoke(new Action(() =>
+                        {
+                            lblStatus.Text = $"⏳ Đang xử lý ảnh mới {count}/{newFiles.Count}...";
+                        }));
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"⚠️ Lỗi ảnh: {path} - {ex.Message}");
+                    }
+                });
+
+                Invoke(new Action(() =>
+                {
+                    datasetFeatures = existingFeatures.Concat(newFeatures).ToList();
+                    FeatureStorage.SaveToCsv(datasetFeatures, csvPath);
+                    lblStatus.Text = $"✅ Đã cập nhật {datasetFeatures.Count} đặc trưng vào CSV.";
+                    btnExtractFeatures.Enabled = true;
+                }));
+            });
+        }
+
+
+
+        // 3. Tìm kiếm ảnh giống nhất
+        private void btnSearch_Click(object sender, EventArgs e)
+        {
+            if (queryFeatureVector == null || datasetFeatures.Count == 0)
+            {
+                MessageBox.Show("⚠️ Vui lòng chọn ảnh truy vấn và trích đặc trưng trước.");
+                return;
             }
 
-            statusBar.Items[0].Text = $"Tìm kiếm hoàn tất trong {watch.ElapsedMilliseconds} ms";
+            var top5 = datasetFeatures
+                .Select(f => new
+                {
+                    Path = f.ImagePath,
+                    Score = SimilarityCalculator.Cosine(queryFeatureVector, f.FeatureVector)
+                })
+                .OrderByDescending(x => x.Score) // .OrderBy(x => x.Score) dung cho Euclidan cang nho cang giong 
+                .Take(5)
+                .ToList();
+
+            flowResults.Controls.Clear();
+
+            foreach (var item in top5)
+            {
+                PictureBox pic = new PictureBox();
+                pic.Image = new Bitmap(item.Path);
+                pic.SizeMode = PictureBoxSizeMode.Zoom;
+                pic.Width = 120;
+                pic.Height = 120;
+
+                Label lbl = new Label();
+                lbl.Text = $"Score: {item.Score:F4}";
+                lbl.TextAlign = ContentAlignment.MiddleCenter;
+                lbl.Width = 120;
+
+                Panel panel = new Panel();
+                panel.Width = 130;
+                panel.Height = 150;
+                panel.Controls.Add(pic);
+                panel.Controls.Add(lbl);
+                lbl.Top = pic.Bottom + 2;
+
+                flowResults.Controls.Add(panel);
+            }
+
+            lblStatus.Text = "✅ Đã tìm thấy top 5 ảnh giống nhất.";
         }
+
+
     }
 }
