@@ -1,0 +1,9 @@
+D:\Đa phương tiện\btl\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.csproj.AssemblyReference.cache
+D:\Đa phương tiện\btl\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.Properties.Resources.resources
+D:\Đa phương tiện\btl\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.csproj.GenerateResource.cache
+D:\Đa phương tiện\btl\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.csproj.CoreCompileInputs.cache
+D:\Đa phương tiện\btl\CBIR_Project\CBIR_Project\bin\Debug\CBIR_Project.exe.config
+D:\Đa phương tiện\btl\CBIR_Project\CBIR_Project\bin\Debug\CBIR_Project.exe
+D:\Đa phương tiện\btl\CBIR_Project\CBIR_Project\bin\Debug\CBIR_Project.pdb
+D:\Đa phương tiện\btl\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.exe
+D:\Đa phương tiện\btl\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.pdb

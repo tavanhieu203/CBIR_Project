@@ -26,7 +26,8 @@ namespace CBIR_Project.Features
             // Chỉ dùng đặc trưng cạnh để test
             //return EdgeFeature.Extract(bmp);
             //dùng đăc trưng LBP
-            return LBPFeature.Extract(bmp);
+            //return LBPFeature.Extract(bmp);
+            return HistogramFeature.Extract(bmp);
         }
     }
 }
