@@ -24,7 +24,9 @@ namespace CBIR_Project.Features
         public static float[] ExtractAll(Bitmap bmp)
         {
             // Chỉ dùng đặc trưng cạnh để test
-            return EdgeFeature.Extract(bmp);
+            //return EdgeFeature.Extract(bmp);
+            //dùng đăc trưng LBP
+            return LBPFeature.Extract(bmp);
         }
     }
 }
