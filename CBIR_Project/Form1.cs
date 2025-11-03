@@ -35,12 +35,33 @@ namespace CBIR_Project
             {
                 queryImagePath = ofd.FileName;
                 queryImage = new Bitmap(queryImagePath);
-                picQuery.Image = queryImage;
 
-                queryFeatureVector = FeatureExtractor.ExtractAll(queryImage);
-                lblStatus.Text = "✅ Đã chọn ảnh truy vấn và trích đặc trưng cạnh.";
+                // Copy riêng cho UI – tránh shared bitmap
+                picQuery.Image = (Bitmap)queryImage.Clone();
+
+                lblStatus.Text = "⏳ Đang trích đặc trưng ảnh truy vấn...";
+                btnChooseImage.Enabled = false;
+                btnSearch.Enabled = false;
+
+                Task.Run(() =>
+                {
+                    // Copy riêng cho xử lý
+                    using (Bitmap processingImage = (Bitmap)queryImage.Clone())
+                    {
+                        float[] features = FeatureExtractor.ExtractAll(processingImage);
+
+                        Invoke(new Action(() =>
+                        {
+                            queryFeatureVector = features;
+                            lblStatus.Text = "✅ Đã trích xong đặc trưng ảnh truy vấn.";
+                            btnChooseImage.Enabled = true;
+                            btnSearch.Enabled = true;
+                        }));
+                    }
+                });
             }
         }
+
 
         // 2. Trích đặc trưng dataset
         private void btnExtractFeatures_Click(object sender, EventArgs e)
@@ -79,8 +100,9 @@ namespace CBIR_Project
                     try
                     {
                         using (Bitmap bmp = new Bitmap(path))
+                        using (Bitmap clone = (Bitmap)bmp.Clone()) // ✅ clone để tránh locked
                         {
-                            float[] vector = FeatureExtractor.ExtractAll(bmp);
+                            float[] vector = FeatureExtractor.ExtractAll(clone);
                             newFeatures.Add(new ImageFeature(path, vector));
                         }
 
@@ -105,6 +127,7 @@ namespace CBIR_Project
                 }));
             });
         }
+
 
 
 

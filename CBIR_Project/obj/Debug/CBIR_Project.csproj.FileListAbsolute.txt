@@ -1,0 +1,10 @@
+C:\Users\Admin\source\repos\CBIR_Project\CBIR_Project\bin\Debug\CBIR_Project.exe.config
+C:\Users\Admin\source\repos\CBIR_Project\CBIR_Project\bin\Debug\CBIR_Project.exe
+C:\Users\Admin\source\repos\CBIR_Project\CBIR_Project\bin\Debug\CBIR_Project.pdb
+C:\Users\Admin\source\repos\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.Form1.resources
+C:\Users\Admin\source\repos\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.Properties.Resources.resources
+C:\Users\Admin\source\repos\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.csproj.GenerateResource.cache
+C:\Users\Admin\source\repos\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.csproj.CoreCompileInputs.cache
+C:\Users\Admin\source\repos\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.exe
+C:\Users\Admin\source\repos\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.pdb
+C:\Users\Admin\source\repos\CBIR_Project\CBIR_Project\obj\Debug\CBIR_Project.csproj.AssemblyReference.cache

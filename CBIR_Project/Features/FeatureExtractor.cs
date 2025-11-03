@@ -9,7 +9,7 @@ namespace CBIR_Project.Features
 {
     class FeatureExtractor
     {
-        /*
+        
          public static float[] ExtractAll(Bitmap bmp) // chạy cả 4 đặc trưng
         {
             var hsv = HistogramFeature.Extract(bmp);
@@ -19,14 +19,14 @@ namespace CBIR_Project.Features
 
             return hsv.Concat(lbp).Concat(gabor).Concat(edge).ToArray();
         }
-        */
-
+        
+        /*
         public static float[] ExtractAll(Bitmap bmp)
         {
             // Chỉ dùng đặc trưng cạnh để test
             //return EdgeFeature.Extract(bmp);
             //dùng đăc trưng LBP
             return LBPFeature.Extract(bmp);
-        }
+        }*/
     }
 }
